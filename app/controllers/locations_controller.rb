@@ -1,6 +1,6 @@
 class LocationsController < ApplicationController
   def show
-    LocationsService::GetCity.call(params)
-    render json: { hello: 'world' }
+    response = LocationsService::GetCity.call(params)
+    render json: response
   end
 end

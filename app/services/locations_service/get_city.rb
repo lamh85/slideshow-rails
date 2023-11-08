@@ -3,18 +3,20 @@ require 'net/http'
 module LocationsService
   class GetCity
     class << self
-      def call(params)
-        # {"longtitude"=>"139°43", "longtitudeDirection"=>"E", "latitude"=>"35°43", "latitudeDirection"=>"N", "controller"=>"locations", "action"=>"show"}
+      attr_accessor :params
 
-        puts "class ==="
-        puts params
+      def call(params)
+        @params = params
+        open_api_response
       end
 
       private
 
       def open_api_response
-        # http://api.openweathermap.org/geo/1.0/reverse?lat=${apiLat}&lon=${apiLon}&limit=5&appid=${process.env.OPEN_WEATHER_API_KEY}
-        uri = URI()
+        api_key = ENV['OPEN_WEATHER_API_KEY']
+        uri_string = "http://api.openweathermap.org/geo/1.0/reverse?lat=#{latitude}&lon=#{longtitude}&limit=5&appid=#{api_key}"
+        uri = URI(uri_string)
+        Net::HTTP.get(uri)
       end
 
       def longtitude
@@ -27,8 +29,8 @@ module LocationsService
 
       def degree_notation_to_degrees(degree_notation, direction)
         degrees_minutes = degree_notation.split('°')
-        degrees = degrees_minutes.first
-        minutes = degrees_minutes.last
+        degrees = degrees_minutes.first.to_i
+        minutes = degrees_minutes.last.to_i
         scalar = degrees + minutes / 60.to_f
 
         multiplier = ['N', 'E'].include?(direction) ? 1 : -1
