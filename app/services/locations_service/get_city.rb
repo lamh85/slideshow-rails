@@ -14,13 +14,13 @@ module LocationsService
 
       def open_api_response
         api_key = ENV['OPEN_WEATHER_API_KEY']
-        uri_string = "http://api.openweathermap.org/geo/1.0/reverse?lat=#{latitude}&lon=#{longtitude}&limit=5&appid=#{api_key}"
+        uri_string = "http://api.openweathermap.org/geo/1.0/reverse?lat=#{latitude}&lon=#{longitude}&limit=5&appid=#{api_key}"
         uri = URI(uri_string)
         Net::HTTP.get(uri)
       end
 
-      def longtitude
-        degree_notation_to_degrees(params[:longtitude], params[:longtitudeDirection])
+      def longitude
+        degree_notation_to_degrees(params[:longitude], params[:longitudeDirection])
       end
 
       def latitude
