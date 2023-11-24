@@ -7,32 +7,39 @@ module LocationsService
 
       def call(params)
         @params = params
-        open_api_response
+        open_weather_response(params)
       end
 
       private
 
-      def open_api_response
+      def open_weather_response(params)
+        latitude = degree_notation(:latitude)
+        longitude = degree_notation(:longitude)
+
         api_key = ENV['OPEN_WEATHER_API_KEY']
         uri_string = "http://api.openweathermap.org/geo/1.0/reverse?lat=#{latitude}&lon=#{longitude}&limit=5&appid=#{api_key}"
         uri = URI(uri_string)
-        Net::HTTP.get(uri)
+        res_body = JSON.parse(Net::HTTP.get(uri))
+        
+        result = res_body[0]
+        {
+          city: result['name'],
+          country: result['country']
+        }
       end
 
-      def longitude
-        degree_notation_to_degrees(params[:longitude], params[:longitudeDirection])
-      end
+      def degree_notation(dimension)
+        if (dimension == :longitude)
+          degrees = params[:longitude_degrees]
+          minutes = params[:longitude_minutes]
+          direction = params[:longitude_direction]
+        else
+          degrees = params[:latitude_degrees]
+          minutes = params[:latitude_minutes]
+          direction = params[:latitude_direction]
+        end
 
-      def latitude
-        degree_notation_to_degrees(params[:latitude], params[:latitudeDirection])
-      end
-
-      def degree_notation_to_degrees(degree_notation, direction)
-        degrees_minutes = degree_notation.split('°')
-        degrees = degrees_minutes.first.to_i
-        minutes = degrees_minutes.last.to_i
-        scalar = degrees + minutes / 60.to_f
-
+        scalar = degrees.to_f + minutes.to_f / 60
         multiplier = ['N', 'E'].include?(direction) ? 1 : -1
         scalar * multiplier
       end
