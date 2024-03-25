@@ -5,6 +5,8 @@ module LocationsService
     class << self
       attr_accessor :params
 
+      TOKYO_WARDS = %w(Adachi Arakawa Bunkyō Chiyoda Chūō Edogawa Itabashi Katsushika Kita Kōtō Meguro Minato Nakano Nerima Ōta Setagaya Shibuya Shinagawa Shinjuku Suginami Sumida Taitō Toshima)
+
       def call(params)
         @params = params
         open_weather_response(params)
@@ -23,7 +25,7 @@ module LocationsService
         
         result = res_body[0]
         {
-          city: result['name'],
+          city: valid_city(result['name']),
           country: result['country']
         }
       end
@@ -42,6 +44,11 @@ module LocationsService
         scalar = degrees.to_f + minutes.to_f / 60
         multiplier = ['N', 'E'].include?(direction) ? 1 : -1
         scalar * multiplier
+      end
+
+      def valid_city(unvalidated)
+        return 'Tokyo' if TOKYO_WARDS.include?(unvalidated)
+        return unvalidated
       end
     end
   end
