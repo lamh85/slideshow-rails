@@ -24,8 +24,11 @@ module LocationsService
         res_body = JSON.parse(Net::HTTP.get(uri))
         
         result = res_body[0]
+        city_result = city_result(result['name'])
         {
-          city: valid_city(result['name']),
+          city: city_result[:city],
+          city_subdivision_type: city_result[:city_subdivision_type],
+          city_subdivision_name: city_result[:city_subdivision_name],
           country: result['country']
         }
       end
@@ -46,9 +49,22 @@ module LocationsService
         scalar * multiplier
       end
 
-      def valid_city(unvalidated)
-        return 'Tokyo' if TOKYO_WARDS.include?(unvalidated)
-        return unvalidated
+      def city_result(unvalidated_city)
+        if TOKYO_WARDS.include?(unvalidated_city)
+          validated_city = 'Tokyo'
+          city_subdivision_type = 'ward'
+          city_subdivision_name = unvalidated_city
+        else
+          validated_city = unvalidated_city
+          city_subdivision_type = nil
+          city_subdivision_name = nil
+        end
+
+        {
+          city: validated_city,
+          city_subdivision_type: city_subdivision_type,
+          city_subdivision_name: city_subdivision_name
+        }
       end
     end
   end
