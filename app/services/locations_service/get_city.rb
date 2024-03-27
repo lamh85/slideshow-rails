@@ -5,6 +5,8 @@ module LocationsService
     class << self
       attr_accessor :params
 
+      TOKYO_WARDS = %w(Adachi Arakawa Bunkyō Chiyoda Chūō Edogawa Itabashi Katsushika Kita Kōtō Meguro Minato Nakano Nerima Ōta Setagaya Shibuya Shinagawa Shinjuku Suginami Sumida Taitō Toshima)
+
       def call(params)
         @params = params
         open_weather_response(params)
@@ -22,8 +24,11 @@ module LocationsService
         res_body = JSON.parse(Net::HTTP.get(uri))
         
         result = res_body[0]
+        city_result = city_result(result['name'])
         {
-          city: result['name'],
+          city: city_result[:city],
+          city_subdivision_type: city_result[:city_subdivision_type],
+          city_subdivision_name: city_result[:city_subdivision_name],
           country: result['country']
         }
       end
@@ -42,6 +47,24 @@ module LocationsService
         scalar = degrees.to_f + minutes.to_f / 60
         multiplier = ['N', 'E'].include?(direction) ? 1 : -1
         scalar * multiplier
+      end
+
+      def city_result(unvalidated_city)
+        if TOKYO_WARDS.include?(unvalidated_city)
+          validated_city = 'Tokyo'
+          city_subdivision_type = 'ward'
+          city_subdivision_name = unvalidated_city
+        else
+          validated_city = unvalidated_city
+          city_subdivision_type = nil
+          city_subdivision_name = nil
+        end
+
+        {
+          city: validated_city,
+          city_subdivision_type: city_subdivision_type,
+          city_subdivision_name: city_subdivision_name
+        }
       end
     end
   end
